@@ -1,0 +1,192 @@
+<div class="register-page">
+
+  <!-- ── Côté gauche — Illustration ─────────── -->
+  <div class="register-left">
+    <div class="left-content">
+
+      <div class="brand">
+        <div class="brand-icon">
+          <mat-icon>business_center</mat-icon>
+        </div>
+        <span class="brand-name">GestionProjets</span>
+      </div>
+
+      <div class="hero-text">
+        <h1>Rejoignez notre<br>plateforme</h1>
+        <p>Créez votre compte et commencez à gérer vos projets dès aujourd'hui.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step-item">
+          <div class="step-number">1</div>
+          <div class="step-text">
+            <span class="step-title">Créez votre compte</span>
+            <span class="step-desc">Inscription rapide et gratuite</span>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+
+        <div class="step-item">
+          <div class="step-number">2</div>
+          <div class="step-text">
+            <span class="step-title">Créez vos projets</span>
+            <span class="step-desc">Organisez votre travail</span>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+
+        <div class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-text">
+            <span class="step-title">Collaborez</span>
+            <span class="step-desc">Invitez votre équipe</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+  </div>
+
+  <!-- ── Côté droit — Formulaire ────────────── -->
+  <div class="register-right">
+    <div class="form-container">
+
+      <!-- En-tête -->
+      <div class="form-header">
+        <h2>Créer un compte 🚀</h2>
+        <p>Remplissez les informations ci-dessous</p>
+      </div>
+
+      <!-- Alertes -->
+      <div class="alert-error" *ngIf="errorMessage">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <div class="alert-success" *ngIf="successMessage">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ successMessage }}</span>
+      </div>
+
+      <!-- Formulaire -->
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+        <!-- Prénom & Nom -->
+        <div class="names-row">
+          <div class="field-group">
+            <label class="field-label">Prénom</label>
+            <mat-form-field appearance="outline" class="full-width">
+              <input matInput
+                     formControlName="first_name"
+                     placeholder="Prénom"/>
+              <mat-icon matPrefix>person_outline</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Nom</label>
+            <mat-form-field appearance="outline" class="full-width">
+              <input matInput
+                     formControlName="last_name"
+                     placeholder="Nom"/>
+              <mat-icon matPrefix>person_outline</mat-icon>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Username -->
+        <div class="field-group">
+          <label class="field-label">Nom d'utilisateur <span class="required">*</span></label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput
+                   formControlName="username"
+                   placeholder="Choisissez un nom d'utilisateur"
+                   autocomplete="username"/>
+            <mat-icon matPrefix>alternate_email</mat-icon>
+            <mat-error *ngIf="usernameError">{{ usernameError }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Email -->
+        <div class="field-group">
+          <label class="field-label">Email <span class="required">*</span></label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput
+                   type="email"
+                   formControlName="email"
+                   placeholder="votre@email.com"
+                   autocomplete="email"/>
+            <mat-icon matPrefix>mail_outline</mat-icon>
+            <mat-error *ngIf="emailError">{{ emailError }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Mot de passe -->
+        <div class="field-group">
+          <label class="field-label">Mot de passe <span class="required">*</span></label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput
+                   [type]="hidePassword ? 'password' : 'text'"
+                   formControlName="password"
+                   placeholder="Minimum 8 caractères"
+                   autocomplete="new-password"/>
+            <mat-icon matPrefix>lock_outline</mat-icon>
+            <button mat-icon-button
+                    matSuffix
+                    type="button"
+                    (click)="hidePassword = !hidePassword">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="passwordError">{{ passwordError }}</mat-error>
+          </mat-form-field>
+
+          <!-- Indicateur force mot de passe -->
+          <div class="password-strength"
+               *ngIf="registerForm.get('password')?.value">
+            <div class="strength-bars">
+              <div class="strength-bar" [class.active]="getPasswordStrength() >= 1"
+                   [class]="getPasswordStrength() >= 1 ? getPasswordStrengthClass() : ''">
+              </div>
+              <div class="strength-bar" [class.active]="getPasswordStrength() >= 2"
+                   [class]="getPasswordStrength() >= 2 ? getPasswordStrengthClass() : ''">
+              </div>
+              <div class="strength-bar" [class.active]="getPasswordStrength() >= 3"
+                   [class]="getPasswordStrength() >= 3 ? getPasswordStrengthClass() : ''">
+              </div>
+              <div class="strength-bar" [class.active]="getPasswordStrength() >= 4"
+                   [class]="getPasswordStrength() >= 4 ? getPasswordStrengthClass() : ''">
+              </div>
+            </div>
+            <span class="strength-label" [class]="getPasswordStrengthClass()">
+              {{ getPasswordStrengthLabel() }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Bouton submit -->
+        <button mat-raised-button
+                color="primary"
+                type="submit"
+                class="submit-btn"
+                [disabled]="registerForm.invalid || loading">
+          <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+          <mat-icon *ngIf="!loading">person_add</mat-icon>
+          <span>{{ loading ? 'Création en cours...' : 'Créer mon compte' }}</span>
+        </button>
+
+      </form>
+
+      <!-- Lien login -->
+      <div class="login-link">
+        <span>Déjà un compte ?</span>
+        <a routerLink="/login">Se connecter</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>

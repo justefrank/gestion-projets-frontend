@@ -9,6 +9,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TacheService } from '../../../core/services/tache.service';
 import { ProjetService } from '../../../core/services/projet.service';
 import { Projet } from '../../../core/models';
@@ -26,6 +30,10 @@ import { Projet } from '../../../core/models';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatDividerModule,
+    MatTooltipModule,
   ],
   templateUrl: './tache-form.component.html',
   styleUrl: './tache-form.component.scss'
@@ -33,25 +41,25 @@ import { Projet } from '../../../core/models';
 export class TacheFormComponent implements OnInit {
 
   tacheForm: FormGroup;
-  loading = false;
-  saving = false;
+  loading    = false;
+  saving     = false;
   isEditMode = false;
   tacheId: number | null = null;
   errorMessage = '';
   projets: Projet[] = [];
 
   statuts = [
-    { value: 'A_FAIRE',     label: 'À faire'     },
-    { value: 'EN_COURS',    label: 'En cours'    },
-    { value: 'EN_REVISION', label: 'En révision' },
-    { value: 'TERMINE',     label: 'Terminé'     },
+    { value: 'A_FAIRE',     label: 'À faire',     icon: 'radio_button_unchecked', color: '#888'    },
+    { value: 'EN_COURS',    label: 'En cours',    icon: 'play_circle',            color: '#1976d2' },
+    { value: 'EN_REVISION', label: 'En révision', icon: 'rate_review',            color: '#f57c00' },
+    { value: 'TERMINE',     label: 'Terminé',     icon: 'check_circle',           color: '#388e3c' },
   ];
 
   priorites = [
-    { value: 'FAIBLE',  label: 'Faible'  },
-    { value: 'NORMALE', label: 'Normale' },
-    { value: 'HAUTE',   label: 'Haute'   },
-    { value: 'URGENTE', label: 'Urgente' },
+    { value: 'FAIBLE',  label: 'Faible',  icon: 'south', color: '#4caf50' },
+    { value: 'NORMALE', label: 'Normale', icon: 'remove', color: '#2196f3' },
+    { value: 'HAUTE',   label: 'Haute',   icon: 'north', color: '#ff9800' },
+    { value: 'URGENTE', label: 'Urgente', icon: 'priority_high', color: '#f44336' },
   ];
 
   constructor(
@@ -63,11 +71,11 @@ export class TacheFormComponent implements OnInit {
   ) {
     this.tacheForm = this.fb.group({
       titre      : ['', [Validators.required, Validators.minLength(3)]],
-      description: [''],
+      description: ['', Validators.maxLength(1000)],
       projet     : ['', Validators.required],
       priorite   : ['NORMALE', Validators.required],
       statut     : ['A_FAIRE', Validators.required],
-      date_limite: [''],
+      date_limite: [null],
     });
   }
 
@@ -84,6 +92,21 @@ export class TacheFormComponent implements OnInit {
     }
   }
 
+  // ── Getters pour les erreurs ──────────────────
+  get titreError(): string {
+    const ctrl = this.tacheForm.get('titre');
+    if (ctrl?.touched && ctrl?.hasError('required'))   return 'Le titre est requis';
+    if (ctrl?.touched && ctrl?.hasError('minlength'))  return 'Minimum 3 caractères';
+    return '';
+  }
+
+  get projetError(): string {
+    const ctrl = this.tacheForm.get('projet');
+    if (ctrl?.touched && ctrl?.hasError('required')) return 'Le projet est requis';
+    return '';
+  }
+
+  // ── Chargement ────────────────────────────────
   loadProjets(): void {
     this.projetService.getAll().subscribe({
       next: projets => this.projets = projets,
@@ -101,7 +124,9 @@ export class TacheFormComponent implements OnInit {
           projet     : tache.projet,
           priorite   : tache.priorite,
           statut     : tache.statut,
-          date_limite: tache.date_limite,
+          date_limite: tache.date_limite
+                       ? new Date(tache.date_limite)
+                       : null,
         });
         this.loading = false;
       },
@@ -112,6 +137,7 @@ export class TacheFormComponent implements OnInit {
     });
   }
 
+  // ── Soumission ────────────────────────────────
   onSubmit(): void {
     if (this.tacheForm.invalid) return;
 
@@ -155,12 +181,17 @@ export class TacheFormComponent implements OnInit {
     }
   }
 
+  // ── Helpers ───────────────────────────────────
   formatDate(date: any): string {
     if (!date) return '';
-    const d = new Date(date);
+    const d     = new Date(date);
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day   = String(d.getDate()).padStart(2, '0');
     return `${d.getFullYear()}-${month}-${day}`;
+  }
+
+  goToNewProject(): void {
+    this.router.navigate(['/projets/nouveau']);
   }
 
   annuler(): void {

@@ -1,136 +1,232 @@
 <div class="projet-list-wrapper">
 
-  <!-- ── En-tête ────────────────────────────── -->
+  <!-- ── En-tête amélioré ────────────────────────────── -->
   <div class="page-header">
-    <div>
-      <h1>Mes Projets</h1>
-      <p>{{ projetsFiltres.length }} projet(s) trouvé(s)</p>
+    <div class="header-left">
+      <div class="header-icon">
+        <mat-icon>folder_special</mat-icon>
+      </div>
+      <div>
+        <h1>Mes Projets</h1>
+        <p class="subtitle">
+          {{ projetsFiltres.length }} projet(s) actif(s)
+          <span class="separator">•</span>
+          <span class="completion-badge">
+            Taux global: {{ getGlobalProgress() }}%
+          </span>
+        </p>
+      </div>
     </div>
-    <button mat-raised-button color="primary"
-            (click)="router.navigate(['/projets/nouveau'])">
-      <mat-icon>add</mat-icon>
+    <button mat-raised-button color="primary" class="create-btn" (click)="goToNewProject()">
+      <mat-icon>add_circle</mat-icon>
       Nouveau projet
     </button>
   </div>
 
-  <!-- ── Filtres ────────────────────────────── -->
-  <div class="filters-bar">
+  <!-- ── Filtres avancés ────────────────────────────── -->
+  <div class="filters-container">
+    <div class="filters-bar">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Rechercher un projet</mat-label>
+        <input matInput
+               [(ngModel)]="searchText"
+               (ngModelChange)="appliquerFiltres()"
+               placeholder="Nom, description..."/>
+        <mat-icon matPrefix>search</mat-icon>
+        <button matSuffix mat-icon-button *ngIf="searchText" (click)="searchText = ''; appliquerFiltres()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Rechercher un projet</mat-label>
-      <input matInput
-             [(ngModel)]="searchText"
-             (ngModelChange)="appliquerFiltres()"
-             placeholder="Nom du projet..."/>
-      <mat-icon matPrefix>search</mat-icon>
-    </mat-form-field>
+      <mat-form-field appearance="outline" class="statut-field">
+        <mat-label>Statut</mat-label>
+        <mat-select [(ngModel)]="statutFiltre" (ngModelChange)="appliquerFiltres()">
+          <mat-option value="">Tous les statuts</mat-option>
+          @for (statut of statuts.slice(1); track statut.value) {
+            <mat-option [value]="statut.value">
+              <div class="filter-option">
+                <mat-icon [style.color]="statut.color">{{ statut.icon }}</mat-icon>
+                <span>{{ statut.label }}</span>
+              </div>
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
 
-    <mat-form-field appearance="outline" class="statut-field">
-      <mat-label>Statut</mat-label>
-      <mat-select [(ngModel)]="statutFiltre"
-                  (ngModelChange)="appliquerFiltres()">
-        @for (statut of statuts; track statut.value) {
-          <mat-option [value]="statut.value">
-            {{ statut.label }}
-          </mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+    <!-- Filtres actifs -->
+    <div class="active-filters" *ngIf="hasActiveFilters()">
+      <span class="active-label">Filtres appliqués :</span>
+      <span class="filter-chip" *ngIf="searchText">
+        Recherche : "{{ searchText }}"
+        <mat-icon (click)="searchText = ''; appliquerFiltres()">close</mat-icon>
+      </span>
+      <span class="filter-chip" *ngIf="statutFiltre">
+        Statut : {{ getStatutLabel(statutFiltre) }}
+        <mat-icon (click)="statutFiltre = ''; appliquerFiltres()">close</mat-icon>
+      </span>
+      <button class="reset-filters" (click)="resetFilters()">
+        <mat-icon>refresh</mat-icon>
+        Tout effacer
+      </button>
+    </div>
+  </div>
 
+  <!-- ── Statistiques rapides ─────────────────────────── -->
+  <div class="stats-row" *ngIf="!loading && projets.length > 0">
+    <div class="stat-item">
+      <div class="stat-icon">
+        <mat-icon>analytics</mat-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getActiveProjects() }}</span>
+        <span class="stat-label">Projets actifs</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getCompletedProjects() }}</span>
+        <span class="stat-label">Projets terminés</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon">
+        <mat-icon>schedule</mat-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getAverageProgress() }}%</span>
+        <span class="stat-label">Progression moyenne</span>
+      </div>
+    </div>
   </div>
 
   <!-- ── Chargement ─────────────────────────── -->
   <div class="loading-state" *ngIf="loading">
-    <mat-icon class="spin">refresh</mat-icon>
+    <mat-spinner diameter="40"></mat-spinner>
     <p>Chargement des projets...</p>
   </div>
 
-  <!-- ── Liste des projets ──────────────────── -->
+  <!-- ── Liste des projets améliorée ──────────────────── -->
   <div class="projets-grid" *ngIf="!loading">
 
     @for (projet of projetsFiltres; track projet.id) {
       <mat-card class="projet-card"
+                [class.terminated]="projet.statut === 'TERMINE'"
                 (click)="router.navigate(['/projets', projet.id])">
+
+        <!-- Badge de statut -->
+        <div class="status-badge" [class]="getStatutClass(projet.statut)">
+          <mat-icon [style.color]="getStatutColor(projet.statut)">{{ getStatutIcon(projet.statut) }}</mat-icon>
+          <span>{{ getStatutLabel(projet.statut) }}</span>
+        </div>
 
         <!-- En-tête carte -->
         <div class="card-header">
-          <div class="projet-icon">
+          <div class="projet-icon" [style.background]="getGradientColor(projet.id)">
             <mat-icon>folder</mat-icon>
           </div>
-          <span class="badge" [ngClass]="getStatutClass(projet.statut)">
-            {{ getStatutLabel(projet.statut) }}
-          </span>
+          <div class="projet-info">
+            <h3 class="projet-nom">{{ projet.nom }}</h3>
+            <p class="projet-desc" *ngIf="projet.description">
+              {{ projet.description | slice:0:100 }}{{ projet.description.length > 100 ? '...' : '' }}
+            </p>
+            <p class="projet-desc empty" *ngIf="!projet.description">
+              Aucune description
+            </p>
+          </div>
         </div>
 
-        <!-- Nom et description -->
-        <mat-card-content>
-          <h3 class="projet-nom">{{ projet.nom }}</h3>
-          <p class="projet-desc">
-            {{ projet.description || 'Aucune description' }}
-          </p>
-
-          <!-- Chef de projet -->
-          <div class="projet-meta">
-            <mat-icon>person</mat-icon>
-            <span>
-              {{ projet.chef_projet_detail.first_name }}
-              {{ projet.chef_projet_detail.last_name }}
-
-
-            </span>
-          </div>
-
-          <!-- Dates -->
-          <div class="projet-meta">
-            <mat-icon>calendar_today</mat-icon>
-            <span>{{ projet.date_debut }} → {{ projet.date_fin }}</span>
-          </div>
-
-          <!-- Progression -->
-          <div class="progression-section">
-            <div class="progression-header">
-              <span>Progression</span>
-              <strong>{{ projet.progression }}%</strong>
+        <!-- Métadonnées -->
+        <div class="projet-metadata">
+          <div class="meta-row">
+            <div class="meta-item">
+              <mat-icon>person</mat-icon>
+              <span>
+                @if (projet.chef_projet_detail) {
+                  {{ projet.chef_projet_detail.first_name }} {{ projet.chef_projet_detail.last_name }}
+                } @else {
+                  Non assigné
+                }
+              </span>
             </div>
-            <mat-progress-bar
-              mode="determinate"
-              [value]="projet.progression"
-              [color]="projet.progression === 100 ? 'accent' : 'primary'">
-            </mat-progress-bar>
+            <div class="meta-item">
+              <mat-icon>task</mat-icon>
+              <span>{{ getTaskCount(projet.id) }} tâches</span>
+            </div>
           </div>
-        </mat-card-content>
+
+          <div class="meta-row">
+            <div class="meta-item">
+              <mat-icon>event</mat-icon>
+              <span>{{ formatDate(projet.date_debut) }} → {{ formatDate(projet.date_fin) }}</span>
+            </div>
+            <div class="meta-item" [class.urgent]="getDaysRemaining(projet.date_fin) <= 7 && getDaysRemaining(projet.date_fin) > 0">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ getRemainingText(projet.date_fin) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progression -->
+        <div class="progression-section">
+          <div class="progression-header">
+            <span>Progression du projet</span>
+            <strong class="progress-value">{{ projet.progression }}%</strong>
+          </div>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="projet.progression"
+            [color]="getProgressColor(projet.progression)">
+          </mat-progress-bar>
+          <div class="progress-stats" *ngIf="projet.progression < 100">
+            <span>🔵 {{ getRemainingTasks(projet.id) }} tâches restantes</span>
+          </div>
+        </div>
 
         <!-- Actions -->
-        <mat-card-actions>
+        <div class="card-actions" (click)="$event.stopPropagation()">
           <button mat-icon-button
-                  color="primary"
-                  matTooltip="Modifier"
-                  (click)="$event.stopPropagation();
-                           router.navigate(['/projets', projet.id, 'modifier'])">
+                  matTooltip="Modifier le projet"
+                  (click)="router.navigate(['/projets', projet.id, 'modifier'])">
             <mat-icon>edit</mat-icon>
           </button>
           <button mat-icon-button
-                  color="warn"
-                  matTooltip="Supprimer"
-                  (click)="supprimerProjet(projet.id, $event)">
-            <mat-icon>delete</mat-icon>
+                  matTooltip="Voir les détails"
+                  (click)="router.navigate(['/projets', projet.id])">
+            <mat-icon>visibility</mat-icon>
           </button>
-        </mat-card-actions>
+          <button mat-icon-button
+                  matTooltip="Supprimer le projet"
+                  color="warn"
+                  (click)="supprimerProjet(projet.id, $event)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
 
       </mat-card>
     }
 
-    <!-- État vide -->
+    <!-- État vide amélioré -->
     @empty {
       <div class="empty-state">
-        <mat-icon>folder_open</mat-icon>
+        <div class="empty-icon">
+          <mat-icon>folder_open</mat-icon>
+        </div>
         <h3>Aucun projet trouvé</h3>
-        <p>Créez votre premier projet ou modifiez vos filtres</p>
-        <button mat-raised-button color="primary"
-                (click)="router.navigate(['/projets/nouveau'])">
-          <mat-icon>add</mat-icon>
-          Créer un projet
-        </button>
+        <p>Découvrez notre plateforme de gestion de projets</p>
+        <div class="empty-actions">
+          <button mat-raised-button color="primary" (click)="resetFilters()" *ngIf="hasActiveFilters()">
+            <mat-icon>refresh</mat-icon>
+            Réinitialiser les filtres
+          </button>
+          <button mat-raised-button color="primary" (click)="goToNewProject()">
+            <mat-icon>add_circle</mat-icon>
+            Créer mon premier projet
+          </button>
+        </div>
       </div>
     }
 

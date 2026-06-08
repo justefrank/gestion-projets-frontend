@@ -1,13 +1,22 @@
 <div class="form-wrapper">
 
-  <!-- ── En-tête ────────────────────────────── -->
+  <!-- ── En-tête amélioré ────────────────────────────── -->
   <div class="page-header">
-    <button mat-icon-button (click)="annuler()">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <div>
-      <h1>{{ isEditMode ? 'Modifier la tâche' : 'Nouvelle tâche' }}</h1>
-      <p>{{ isEditMode ? 'Mettez à jour les informations' : 'Remplissez les informations de la tâche' }}</p>
+    <div class="header-left">
+      <button mat-icon-button class="back-button" (click)="annuler()" matTooltip="Retour à la liste">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-icon" [class.edit-mode]="isEditMode">
+        <mat-icon>{{ isEditMode ? 'edit_note' : 'add_task' }}</mat-icon>
+      </div>
+      <div class="header-text">
+        <h1>{{ isEditMode ? 'Modifier la tâche' : 'Nouvelle tâche' }}</h1>
+        <p>{{ isEditMode ? 'Mettez à jour les informations de votre tâche' : 'Créez une nouvelle tâche pour votre projet' }}</p>
+      </div>
+    </div>
+    <div class="header-badge" *ngIf="isEditMode">
+      <mat-icon>info</mat-icon>
+      <span>ID: #{{ tacheId }}</span>
     </div>
   </div>
 
@@ -15,28 +24,24 @@
   <mat-card class="form-card">
     <mat-card-content>
 
+      <!-- Loading State -->
       <div class="loading-state" *ngIf="loading">
         <mat-spinner diameter="40"></mat-spinner>
-        <p>Chargement...</p>
+        <p>Chargement de la tâche...</p>
       </div>
 
-      <form [formGroup]="tacheForm"
-            (ngSubmit)="onSubmit()"
-            *ngIf="!loading">
+      <!-- Formulaire -->
+      <form [formGroup]="tacheForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
 
         <!-- Titre -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Titre de la tâche</mat-label>
           <input matInput
                  formControlName="titre"
-                 placeholder="Ex: Concevoir la maquette"/>
+                 placeholder="Ex: Implémenter l'authentification"
+                 autocomplete="off"/>
           <mat-icon matPrefix>assignment</mat-icon>
-          <mat-error *ngIf="tacheForm.get('titre')?.hasError('required')">
-            Le titre est requis
-          </mat-error>
-          <mat-error *ngIf="tacheForm.get('titre')?.hasError('minlength')">
-            Minimum 3 caractères
-          </mat-error>
+          <mat-error *ngIf="titreError">{{ titreError }}</mat-error>
         </mat-form-field>
 
         <!-- Description -->
@@ -44,24 +49,35 @@
           <mat-label>Description</mat-label>
           <textarea matInput
                     formControlName="description"
-                    rows="3"
-                    placeholder="Décrivez la tâche...">
+                    rows="4"
+                    placeholder="Décrivez la tâche en détail...">
           </textarea>
           <mat-icon matPrefix>description</mat-icon>
+          <mat-hint align="end">
+            {{ tacheForm.get('description')?.value?.length || 0 }}/1000 caractères
+          </mat-hint>
         </mat-form-field>
 
         <!-- Projet -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Projet</mat-label>
           <mat-select formControlName="projet">
+            <mat-option value="" disabled>Sélectionnez un projet</mat-option>
+            <mat-divider></mat-divider>
             @for (projet of projets; track projet.id) {
-              <mat-option [value]="projet.id">{{ projet.nom }}</mat-option>
+              <mat-option [value]="projet.id">
+                <div class="project-option">
+                  <mat-icon>folder</mat-icon>
+                  <span>{{ projet.nom }}</span>
+                </div>
+              </mat-option>
             }
           </mat-select>
-          <mat-icon matPrefix>folder</mat-icon>
-          <mat-error *ngIf="tacheForm.get('projet')?.hasError('required')">
-            Le projet est requis
-          </mat-error>
+          <mat-icon matPrefix>folder_open</mat-icon>
+          <mat-error *ngIf="projetError">{{ projetError }}</mat-error>
+          <mat-hint *ngIf="projets.length === 0">
+            Aucun projet disponible. <a (click)="goToNewProject()">Créez un projet</a> d'abord.
+          </mat-hint>
         </mat-form-field>
 
         <!-- Priorité et Statut -->
@@ -71,7 +87,13 @@
             <mat-label>Priorité</mat-label>
             <mat-select formControlName="priorite">
               @for (p of priorites; track p.value) {
-                <mat-option [value]="p.value">{{ p.label }}</mat-option>
+                <mat-option [value]="p.value">
+                  <div class="priority-option">
+                    <span class="priority-dot" [style.backgroundColor]="p.color"></span>
+                    <mat-icon [style.color]="p.color">{{ p.icon }}</mat-icon>
+                    <span>{{ p.label }}</span>
+                  </div>
+                </mat-option>
               }
             </mat-select>
             <mat-icon matPrefix>flag</mat-icon>
@@ -81,7 +103,12 @@
             <mat-label>Statut</mat-label>
             <mat-select formControlName="statut">
               @for (s of statuts; track s.value) {
-                <mat-option [value]="s.value">{{ s.label }}</mat-option>
+                <mat-option [value]="s.value">
+                  <div class="status-option">
+                    <mat-icon [style.color]="s.color">{{ s.icon }}</mat-icon>
+                    <span>{{ s.label }}</span>
+                  </div>
+                </mat-option>
               }
             </mat-select>
             <mat-icon matPrefix>track_changes</mat-icon>
@@ -91,29 +118,40 @@
 
         <!-- Date limite -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Date limite (optionnelle)</mat-label>
-          <input matInput type="date" formControlName="date_limite"/>
+          <mat-label>Date limite</mat-label>
+          <input matInput
+                 [matDatepicker]="picker"
+                 formControlName="date_limite"
+                 placeholder="JJ/MM/AAAA"/>
           <mat-icon matPrefix>event</mat-icon>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          <mat-hint>Laissez vide si aucune échéance</mat-hint>
         </mat-form-field>
 
-        <!-- Erreur -->
+        <!-- Message d'erreur -->
         <div class="error-message" *ngIf="errorMessage">
-          <mat-icon>error</mat-icon>
-          {{ errorMessage }}
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage }}</span>
         </div>
 
-        <!-- Boutons -->
+        <!-- Séparateur -->
+        <mat-divider class="form-divider"></mat-divider>
+
+        <!-- Boutons d'action -->
         <div class="form-actions">
-          <button mat-stroked-button type="button" (click)="annuler()">
-            Annuler
+          <button mat-stroked-button type="button" class="cancel-btn" (click)="annuler()">
+            <mat-icon>close</mat-icon>
+            <span>Annuler</span>
           </button>
           <button mat-raised-button
                   color="primary"
                   type="submit"
+                  class="submit-btn"
                   [disabled]="tacheForm.invalid || saving">
             <mat-spinner diameter="20" *ngIf="saving"></mat-spinner>
-            <mat-icon *ngIf="!saving">save</mat-icon>
-            <span>{{ saving ? 'Enregistrement...' : (isEditMode ? 'Modifier' : 'Créer la tâche') }}</span>
+            <mat-icon *ngIf="!saving">{{ isEditMode ? 'save' : 'add_circle' }}</mat-icon>
+            <span>{{ saving ? 'Enregistrement...' : (isEditMode ? 'Enregistrer les modifications' : 'Créer la tâche') }}</span>
           </button>
         </div>
 

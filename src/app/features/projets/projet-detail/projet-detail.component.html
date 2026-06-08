@@ -1,102 +1,142 @@
 <div class="detail-wrapper" *ngIf="!loading && projet">
 
-  <!-- ── En-tête ────────────────────────────── -->
+  <!-- ── En-tête amélioré ────────────────────────────── -->
   <div class="page-header">
     <div class="header-left">
-      <button mat-icon-button (click)="router.navigate(['/projets'])">
+      <button mat-icon-button class="back-button" (click)="router.navigate(['/projets'])">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <div>
+      <div class="project-icon" [style.background]="getGradientColor(projet.id)">
+        <mat-icon>folder_special</mat-icon>
+      </div>
+      <div class="project-info">
         <h1>{{ projet.nom }}</h1>
-        <p>{{ projet.description || 'Aucune description' }}</p>
+        <p class="project-description">{{ projet.description || 'Aucune description' }}</p>
       </div>
     </div>
     <div class="header-actions">
-      <span class="badge" [ngClass]="getStatutClass(projet.statut)">
-        {{ projet.statut }}
-      </span>
-      <button mat-stroked-button
-              (click)="router.navigate(['/projets', projet.id, 'modifier'])">
+      <div class="status-badge" [class]="getStatutClass(projet.statut)">
+        <mat-icon>{{ getStatutIcon(projet.statut) }}</mat-icon>
+        <span>{{ getStatutLabel(projet.statut) }}</span>
+      </div>
+      <button mat-stroked-button class="edit-btn" (click)="router.navigate(['/projets', projet.id, 'modifier'])">
         <mat-icon>edit</mat-icon>
         Modifier
       </button>
-      <button mat-stroked-button color="warn" (click)="supprimerProjet()">
-        <mat-icon>delete</mat-icon>
+      <button mat-stroked-button class="delete-btn" (click)="supprimerProjet()">
+        <mat-icon>delete_outline</mat-icon>
         Supprimer
       </button>
     </div>
   </div>
 
-  <!-- ── Cartes info ────────────────────────── -->
+  <!-- ── Cartes d'information améliorées ────────────────────────── -->
   <div class="info-grid">
 
     <mat-card class="info-card">
-      <mat-icon>person</mat-icon>
-      <div>
+      <div class="card-icon">
+        <mat-icon>person</mat-icon>
+      </div>
+      <div class="card-content">
         <span class="info-label">Chef de projet</span>
         <span class="info-value">
-          {{ projet.chef_projet_detail.first_name }}
-          {{ projet.chef_projet_detail.last_name }}
+          {{ projet.chef_projet_detail?.first_name || 'Non' }}
+          {{ projet.chef_projet_detail?.last_name || 'assigné' }}
         </span>
       </div>
     </mat-card>
 
     <mat-card class="info-card">
-      <mat-icon>event</mat-icon>
-      <div>
+      <div class="card-icon">
+        <mat-icon>event</mat-icon>
+      </div>
+      <div class="card-content">
         <span class="info-label">Date de début</span>
-        <span class="info-value">{{ projet.date_debut }}</span>
+        <span class="info-value">{{ formatDate(projet.date_debut) }}</span>
       </div>
     </mat-card>
 
     <mat-card class="info-card">
-      <mat-icon>event_busy</mat-icon>
-      <div>
+      <div class="card-icon">
+        <mat-icon>event_busy</mat-icon>
+      </div>
+      <div class="card-content">
         <span class="info-label">Date de fin</span>
-        <span class="info-value">{{ projet.date_fin }}</span>
+        <span class="info-value">{{ formatDate(projet.date_fin) }}</span>
+        <span class="info-sub" *ngIf="getRemainingDays() !== null">
+          {{ getRemainingDays()! > 0 ? getRemainingDays() + ' jours restants' : 'Terminé' }}
+        </span>
       </div>
     </mat-card>
 
     <mat-card class="info-card">
-      <mat-icon>group</mat-icon>
-      <div>
+      <div class="card-icon">
+        <mat-icon>group</mat-icon>
+      </div>
+      <div class="card-content">
         <span class="info-label">Membres</span>
-        <span class="info-value">{{ projet.membres.length }} membre(s)</span>
+        <span class="info-value">{{ projet.membres?.length || 0 }} membre(s)</span>
       </div>
     </mat-card>
 
   </div>
 
-  <!-- ── Progression ────────────────────────── -->
+  <!-- ── Progression améliorée ────────────────────────── -->
   <mat-card class="progression-card">
     <div class="progression-header">
-      <span>Progression globale</span>
-      <strong>{{ projet.progression }}%</strong>
+      <div class="progression-title">
+        <mat-icon>trending_up</mat-icon>
+        <span>Progression globale</span>
+      </div>
+      <div class="progression-percentage">
+        <strong>{{ projet.progression }}%</strong>
+        <span class="progress-status" [class.completed]="projet.progression === 100">
+          {{ projet.progression === 100 ? '✅ Terminé' : '⏳ En cours' }}
+        </span>
+      </div>
     </div>
     <mat-progress-bar
       mode="determinate"
       [value]="projet.progression"
-      [color]="projet.progression === 100 ? 'accent' : 'primary'">
+      [color]="getProgressColor(projet.progression)">
     </mat-progress-bar>
-    <div class="taches-count">
-      {{ taches.length }} tâche(s) au total
+    <div class="progression-footer">
+      <div class="taches-count">
+        <mat-icon>task</mat-icon>
+        {{ taches.length }} tâche(s) au total
+      </div>
+      <div class="completion-stats">
+        <span class="stat">
+          <span class="dot completed"></span>
+          {{ tachesParStatut['TERMINE'].length }} terminées
+        </span>
+        <span class="stat">
+          <span class="dot in-progress"></span>
+          {{ tachesParStatut['EN_COURS'].length }} en cours
+        </span>
+        <span class="stat">
+          <span class="dot pending"></span>
+          {{ tachesParStatut['A_FAIRE'].length }} à faire
+        </span>
+      </div>
     </div>
   </mat-card>
 
-  <!-- ── Onglets ────────────────────────────── -->
-  <mat-tab-group class="tabs">
+  <!-- ── Onglets améliorés ────────────────────────────── -->
+  <mat-tab-group class="tabs" animationDuration="0ms">
 
     <!-- Onglet Kanban -->
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>view_kanban</mat-icon>
-        &nbsp; Kanban
+        <span>Tableau Kanban</span>
+        <span class="tab-badge">{{ taches.length }}</span>
       </ng-template>
 
       <div class="kanban-header">
-        <button mat-raised-button color="primary"
-                (click)="router.navigate(['/taches'])">
-          <mat-icon>add</mat-icon>
+        <button mat-raised-button color="primary" class="new-task-btn"
+                (click)="router.navigate(['/taches/nouvelle'])" matTooltip="Créer une nouvelle tâche">
+          <mat-icon>add_circle</mat-icon>
           Nouvelle tâche
         </button>
       </div>
@@ -104,47 +144,48 @@
       <div class="kanban-board">
         @for (colonne of colonnes; track colonne.key) {
           <div class="kanban-column">
-
-            <!-- En-tête colonne -->
             <div class="column-header">
-              <mat-icon [style.color]="colonne.color">{{ colonne.icon }}</mat-icon>
-              <span>{{ colonne.label }}</span>
-              <span class="count-badge">
-                {{ tachesParStatut[colonne.key].length }}
-              </span>
+              <div class="column-title">
+                <mat-icon [style.color]="colonne.color">{{ colonne.icon }}</mat-icon>
+                <span>{{ colonne.label }}</span>
+              </div>
+              <span class="count-badge">{{ tachesParStatut[colonne.key].length }}</span>
             </div>
 
-            <!-- Tâches -->
-            <div class="column-body">
+            <div class="column-body" cdkDropList>
               @for (tache of tachesParStatut[colonne.key]; track tache.id) {
-                <mat-card class="tache-card">
-                  <div class="tache-titre">{{ tache.titre }}</div>
-                  <div class="tache-meta">
-                    <span class="priorite-badge"
-                          [ngClass]="getPrioriteClass(tache.priorite)">
-                      {{ tache.priorite }}
-                    </span>
-                    <span class="date-limite" *ngIf="tache.date_limite">
-                      <mat-icon>schedule</mat-icon>
-                      {{ tache.date_limite }}
+                <mat-card class="task-card" [class]="getPrioriteClass(tache.priorite)">
+                  <div class="task-header">
+                    <h4 class="task-title">{{ tache.titre }}</h4>
+                    <span class="priority-badge" [class]="getPrioriteClass(tache.priorite)">
+                      {{ getPrioriteLabel(tache.priorite) }}
                     </span>
                   </div>
-                  <div class="tache-assignee" *ngIf="tache.assignee_detail">
-                    <div class="avatar">
-                      {{ tache.assignee_detail.username.charAt(0).toUpperCase() }}
+
+                  <p class="task-description" *ngIf="tache.description">
+                    {{ tache.description | slice:0:80 }}{{ tache.description.length > 80 ? '...' : '' }}
+                  </p>
+
+                  <div class="task-meta">
+                    <div class="task-date" *ngIf="tache.date_limite">
+                      <mat-icon>schedule</mat-icon>
+                      <span>{{ formatDate(tache.date_limite) }}</span>
                     </div>
-                    <span>{{ tache.assignee_detail.username }}</span>
+                    <div class="task-assignee" *ngIf="tache.assignee_detail">
+                      <div class="avatar">
+                        {{ tache.assignee_detail.username.charAt(0).toUpperCase() }}
+                      </div>
+                      <span>{{ tache.assignee_detail.username }}</span>
+                    </div>
                   </div>
                 </mat-card>
-              }
-
-              @empty {
+              } @empty {
                 <div class="empty-column">
+                  <mat-icon>inbox</mat-icon>
                   <p>Aucune tâche</p>
                 </div>
               }
             </div>
-
           </div>
         }
       </div>
@@ -154,32 +195,106 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>group</mat-icon>
-        &nbsp; Membres ({{ projet.membres.length }})
+        <span>Équipe</span>
+        <span class="tab-badge">{{ projet.membres?.length || 0 }}</span>
       </ng-template>
 
-      <div class="membres-list">
-        @for (membre of projet.membres; track membre.id) {
-          <div class="membre-item">
-            <div class="membre-avatar">
-              {{ membre.user_detail.username.charAt(0).toUpperCase() }}
-            </div>
-            <div class="membre-info">
-              <span class="membre-nom">
-                {{ membre.user_detail.first_name }}
-                {{ membre.user_detail.last_name }}
-              </span>
-              <span class="membre-username">{{ '@' + membre.user_detail.username }}</span>
-            </div>
-            <span class="role-badge">{{ membre.role }}</span>
-          </div>
-        }
+      <div class="team-section">
+        <!-- En-tête équipe -->
+        <div class="team-header">
+          <h3>Membres du projet</h3>
+          <button mat-raised-button color="primary" class="add-member-btn">
+            <mat-icon>person_add</mat-icon>
+            Ajouter un membre
+          </button>
+        </div>
 
-        @empty {
-          <div class="empty-state">
-            <mat-icon>group_off</mat-icon>
-            <p>Aucun membre dans ce projet</p>
+        <!-- Liste des membres -->
+        <div class="members-list">
+          @for (membre of projet.membres; track membre.id) {
+            <div class="member-card">
+              <div class="member-avatar" [style.background]="getAvatarColor(membre.id)">
+                {{ membre.user_detail?.username?.charAt(0)?.toUpperCase() || 'U' }}
+              </div>
+              <div class="member-info">
+                <div class="member-name">
+                  {{ membre.user_detail?.first_name || '' }}
+                  {{ membre.user_detail?.last_name || '' }}
+                </div>
+                <div class="member-username">{{ '@' + membre.user_detail?.username }}</div>
+                <div class="member-role">
+                  <mat-icon>badge</mat-icon>
+                  {{ getRoleLabel(membre.role) }}
+                </div>
+              </div>
+              <div class="member-actions">
+                <button mat-icon-button matTooltip="Contacter">
+                  <mat-icon>email</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="Voir les tâches">
+                  <mat-icon>assignment</mat-icon>
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-state">
+              <div class="empty-icon">
+                <mat-icon>group_off</mat-icon>
+              </div>
+              <h4>Aucun membre</h4>
+              <p>Commencez par ajouter des membres à votre équipe</p>
+              <button mat-raised-button color="primary">
+                <mat-icon>person_add</mat-icon>
+                Ajouter un membre
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Nouvel onglet : Activité -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>history</mat-icon>
+        <span>Activité</span>
+      </ng-template>
+
+      <div class="activity-section">
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <mat-icon>create</mat-icon>
+            </div>
+            <div class="timeline-content">
+              <h4>Projet créé</h4>
+              <p>Le projet a été créé le {{ formatDate(projet.created_at) }}</p>
+              <span class="timeline-date">{{ formatRelativeDate(projet.created_at) }}</span>
+            </div>
           </div>
-        }
+
+          <div class="timeline-item" *ngIf="projet.updated_at !== projet.created_at">
+            <div class="timeline-icon">
+              <mat-icon>edit</mat-icon>
+            </div>
+            <div class="timeline-content">
+              <h4>Dernière modification</h4>
+              <p>Le projet a été mis à jour le {{ formatDate(projet.updated_at) }}</p>
+              <span class="timeline-date">{{ formatRelativeDate(projet.updated_at) }}</span>
+            </div>
+          </div>
+
+          <div class="timeline-item" *ngFor="let tache of taches | slice:0:5">
+            <div class="timeline-icon" [class]="getStatutClass(tache.statut)">
+              <mat-icon>task</mat-icon>
+            </div>
+            <div class="timeline-content">
+              <h4>Tâche: {{ tache.titre }}</h4>
+              <p>Statut: {{ getStatutLabel(tache.statut) }} - Priorité: {{ getPrioriteLabel(tache.priorite) }}</p>
+              <span class="timeline-date">Ajoutée récemment</span>
+            </div>
+          </div>
+        </div>
       </div>
     </mat-tab>
 
@@ -187,8 +302,11 @@
 
 </div>
 
-<!-- Chargement -->
+<!-- Chargement amélioré -->
 <div class="loading-state" *ngIf="loading">
-  <mat-icon class="spin">refresh</mat-icon>
-  <p>Chargement du projet...</p>
+  <div class="loading-content">
+    <mat-spinner diameter="50"></mat-spinner>
+    <h3>Chargement du projet...</h3>
+    <p>Préparation des données</p>
+  </div>
 </div>

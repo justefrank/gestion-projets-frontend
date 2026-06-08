@@ -1,13 +1,22 @@
 <div class="form-wrapper">
 
-  <!-- ── En-tête ────────────────────────────── -->
+  <!-- ── En-tête amélioré ────────────────────────────── -->
   <div class="page-header">
-    <button mat-icon-button (click)="annuler()" matTooltip="Retour">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <div>
-      <h1>{{ isEditMode ? 'Modifier le projet' : 'Nouveau projet' }}</h1>
-      <p>{{ isEditMode ? 'Mettez à jour les informations' : 'Remplissez les informations du projet' }}</p>
+    <div class="header-left">
+      <button mat-icon-button class="back-button" (click)="annuler()" matTooltip="Retour à la liste">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-icon" [class.edit-mode]="isEditMode">
+        <mat-icon>{{ isEditMode ? 'edit_square' : 'add_box' }}</mat-icon>
+      </div>
+      <div class="header-text">
+        <h1>{{ isEditMode ? 'Modifier le projet' : 'Nouveau projet' }}</h1>
+        <p>{{ isEditMode ? 'Mettez à jour les informations de votre projet' : 'Créez un nouveau projet pour organiser vos tâches' }}</p>
+      </div>
+    </div>
+    <div class="header-badge" *ngIf="isEditMode">
+      <mat-icon>info</mat-icon>
+      <span>ID: #{{ projetId }}</span>
     </div>
   </div>
 
@@ -15,28 +24,25 @@
   <mat-card class="form-card">
     <mat-card-content>
 
+      <!-- Loading State -->
       <div class="loading-state" *ngIf="loading">
         <mat-spinner diameter="40"></mat-spinner>
-        <p>Chargement...</p>
+        <p>Chargement du projet...</p>
       </div>
 
-      <form [formGroup]="projetForm"
-            (ngSubmit)="onSubmit()"
-            *ngIf="!loading">
+      <!-- Formulaire -->
+      <form [formGroup]="projetForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
 
         <!-- Nom du projet -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Nom du projet</mat-label>
           <input matInput
                  formControlName="nom"
-                 placeholder="Ex: Application mobile e-commerce"/>
-          <mat-icon matPrefix>folder</mat-icon>
-          <mat-error *ngIf="projetForm.get('nom')?.hasError('required')">
-            Le nom est requis
-          </mat-error>
-          <mat-error *ngIf="projetForm.get('nom')?.hasError('minlength')">
-            Minimum 3 caractères
-          </mat-error>
+                 placeholder="Ex: Application mobile e-commerce"
+                 autocomplete="off"/>
+          <mat-icon matPrefix>folder_special</mat-icon>
+          <mat-error *ngIf="nomError">{{ nomError }}</mat-error>
+          <mat-hint>Choisissez un nom clair et descriptif</mat-hint>
         </mat-form-field>
 
         <!-- Description -->
@@ -44,72 +50,108 @@
           <mat-label>Description</mat-label>
           <textarea matInput
                     formControlName="description"
-                    rows="4"
-                    placeholder="Décrivez les objectifs du projet...">
+                    rows="5"
+                    placeholder="Décrivez les objectifs, les livrables et les contraintes du projet...">
           </textarea>
           <mat-icon matPrefix>description</mat-icon>
+          <mat-hint align="end">
+            {{ projetForm.get('description')?.value?.length || 0 }}/2000 caractères
+          </mat-hint>
         </mat-form-field>
 
         <!-- Dates -->
-        <div class="dates-row">
+        <div class="dates-section">
+          <div class="section-title">
+            <mat-icon>event</mat-icon>
+            <span>Calendrier du projet</span>
+          </div>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Date de début</mat-label>
-            <input matInput
-                   formControlName="date_debut"
-                   type="date"/>
-            <mat-icon matPrefix>event</mat-icon>
-            <mat-error *ngIf="projetForm.get('date_debut')?.hasError('required')">
-              Requis
-            </mat-error>
-          </mat-form-field>
+          <div class="dates-row">
+            <mat-form-field appearance="outline" class="date-field">
+              <mat-label>Date de début</mat-label>
+              <input matInput
+                     [matDatepicker]="startPicker"
+                     formControlName="date_debut"
+                     [min]="getMinDate()"/>
+              <mat-icon matPrefix>play_circle</mat-icon>
+              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+              <mat-error *ngIf="dateDebutError">{{ dateDebutError }}</mat-error>
+            </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Date de fin</mat-label>
-            <input matInput
-                   formControlName="date_fin"
-                   type="date"/>
-            <mat-icon matPrefix>event_busy</mat-icon>
-            <mat-error *ngIf="projetForm.get('date_fin')?.hasError('required')">
-              Requis
-            </mat-error>
-          </mat-form-field>
+            <mat-form-field appearance="outline" class="date-field">
+              <mat-label>Date de fin</mat-label>
+              <input matInput
+                     [matDatepicker]="endPicker"
+                     formControlName="date_fin"
+                     [min]="projetForm.get('date_debut')?.value || getMinDate()"/>
+              <mat-icon matPrefix>event_busy</mat-icon>
+              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+              <mat-error *ngIf="dateFinError">{{ dateFinError }}</mat-error>
+            </mat-form-field>
+          </div>
 
+          <!-- Erreur de dates -->
+          <div class="date-error" *ngIf="dateError">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ dateError }}</span>
+          </div>
+
+          <!-- Aperçu de la durée -->
+          <div class="duration-preview" *ngIf="projetForm.get('date_debut')?.value && projetForm.get('date_fin')?.value && !dateError">
+            <mat-icon>timeline</mat-icon>
+            <span>Durée estimée : {{ getDuration() }} jours</span>
+          </div>
         </div>
 
         <!-- Statut -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Statut</mat-label>
-          <mat-select formControlName="statut">
+        <div class="status-section">
+          <div class="section-title">
+            <mat-icon>flag</mat-icon>
+            <span>État d'avancement</span>
+          </div>
+
+          <div class="status-options">
             @for (statut of statuts; track statut.value) {
-              <mat-option [value]="statut.value">
-                {{ statut.label }}
-              </mat-option>
+              <div class="status-option"
+                   [class.selected]="projetForm.get('statut')?.value === statut.value"
+                   (click)="projetForm.patchValue({ statut: statut.value })">
+                <div class="status-radio">
+                  <mat-icon [style.color]="statut.color">{{ statut.icon }}</mat-icon>
+                </div>
+                <div class="status-content">
+                  <div class="status-label">{{ statut.label }}</div>
+                  <div class="status-description">{{ statut.description }}</div>
+                </div>
+              </div>
             }
-          </mat-select>
-          <mat-icon matPrefix>flag</mat-icon>
-        </mat-form-field>
+          </div>
+        </div>
 
         <!-- Message d'erreur -->
         <div class="error-message" *ngIf="errorMessage">
-          <mat-icon>error</mat-icon>
-          {{ errorMessage }}
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage }}</span>
         </div>
 
-        <!-- Boutons -->
+        <!-- Séparateur -->
+        <mat-divider class="form-divider"></mat-divider>
+
+        <!-- Boutons d'action -->
         <div class="form-actions">
-          <button mat-stroked-button
-                  type="button"
-                  (click)="annuler()">
-            Annuler
+          <button mat-stroked-button type="button" class="cancel-btn" (click)="annuler()">
+            <mat-icon>close</mat-icon>
+            <span>Annuler</span>
           </button>
           <button mat-raised-button
                   color="primary"
                   type="submit"
+                  class="submit-btn"
                   [disabled]="projetForm.invalid || saving">
             <mat-spinner diameter="20" *ngIf="saving"></mat-spinner>
-            <mat-icon *ngIf="!saving">save</mat-icon>
-            <span>{{ saving ? 'Enregistrement...' : (isEditMode ? 'Modifier' : 'Créer le projet') }}</span>
+            <mat-icon *ngIf="!saving">{{ isEditMode ? 'save' : 'add_circle' }}</mat-icon>
+            <span>{{ saving ? 'Enregistrement...' : (isEditMode ? 'Enregistrer les modifications' : 'Créer le projet') }}</span>
           </button>
         </div>
 

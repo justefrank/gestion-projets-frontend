@@ -1,133 +1,272 @@
 <div class="tache-list-wrapper">
 
-  <!-- ── En-tête ────────────────────────────── -->
+  <!-- En-tête -->
   <div class="page-header">
-    <div>
-      <h1>Mes Tâches</h1>
-      <p>{{ tachesFiltrees.length }} tâche(s) trouvée(s)</p>
+    <div class="header-content">
+      <div class="title-section">
+        <div class="title-icon">
+          <mat-icon>assignment_turned_in</mat-icon>
+        </div>
+        <div>
+          <h1>Tableau des tâches</h1>
+          <p class="subtitle">{{ stats().total }} tâche(s) au total</p>
+        </div>
+      </div>
+      <button mat-raised-button color="primary" class="create-btn" (click)="goToNewTask()">
+        <mat-icon>add</mat-icon>
+        Nouvelle tâche
+      </button>
     </div>
-    <button mat-raised-button color="primary"
-            (click)="router.navigate(['/taches/nouvelle'])">
-      <mat-icon>add</mat-icon>
-      Nouvelle tâche
-    </button>
   </div>
 
-  <!-- ── Filtres ────────────────────────────── -->
-  <div class="filters-bar">
-
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Rechercher</mat-label>
-      <input matInput
-             [(ngModel)]="searchText"
-             (ngModelChange)="appliquerFiltres()"
-             placeholder="Titre de la tâche..."/>
-      <mat-icon matPrefix>search</mat-icon>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Statut</mat-label>
-      <mat-select [(ngModel)]="statutFiltre"
-                  (ngModelChange)="appliquerFiltres()">
-        @for (s of statuts; track s.value) {
-          <mat-option [value]="s.value">{{ s.label }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Priorité</mat-label>
-      <mat-select [(ngModel)]="prioriteFiltre"
-                  (ngModelChange)="appliquerFiltres()">
-        @for (p of priorites; track p.value) {
-          <mat-option [value]="p.value">{{ p.label }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Projet</mat-label>
-      <mat-select [(ngModel)]="projetFiltre"
-                  (ngModelChange)="appliquerFiltres()">
-        <mat-option value="">Tous les projets</mat-option>
-        @for (projet of projets; track projet.id) {
-          <mat-option [value]="projet.id">{{ projet.nom }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-
-  </div>
-
-  <!-- ── Chargement ─────────────────────────── -->
-  <div class="loading-state" *ngIf="loading">
-    <mat-icon class="spin">refresh</mat-icon>
-    <p>Chargement des tâches...</p>
-  </div>
-
-  <!-- ── Liste tâches ───────────────────────── -->
-  <div class="taches-list" *ngIf="!loading">
-
-    @for (tache of tachesFiltrees; track tache.id) {
-      <mat-card class="tache-card">
-
-        <div class="tache-left">
-          <div class="tache-header">
-            <h3 class="tache-titre">{{ tache.titre }}</h3>
-            <div class="badges">
-              <span class="badge" [ngClass]="getStatutClass(tache.statut)">
-                {{ getStatutLabel(tache.statut) }}
-              </span>
-              <span class="priorite-badge" [ngClass]="getPrioriteClass(tache.priorite)">
-                {{ tache.priorite }}
-              </span>
-            </div>
-          </div>
-
-          <p class="tache-desc">
-            {{ tache.description || 'Aucune description' }}
-          </p>
-
-          <div class="tache-meta">
-            <span class="meta-item">
-              <mat-icon>folder</mat-icon>
-              {{ getProjetNom(tache.projet) }}
-            </span>
-            <span class="meta-item" *ngIf="tache.date_limite">
-              <mat-icon>schedule</mat-icon>
-              {{ tache.date_limite }}
-            </span>
-            <span class="meta-item" *ngIf="tache.assignee_detail">
-              <mat-icon>person</mat-icon>
-              {{ tache.assignee_detail.username }}
-            </span>
-          </div>
+  <!-- Cartes statistiques -->
+  @if (!loading()) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon todo-bg">
+          <mat-icon>pending</mat-icon>
         </div>
+        <div class="stat-details">
+          <span class="stat-value">{{ stats().aFaire }}</span>
+          <span class="stat-label">À faire</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon progress-bg">
+          <mat-icon>play_circle</mat-icon>
+        </div>
+        <div class="stat-details">
+          <span class="stat-value">{{ stats().enCours }}</span>
+          <span class="stat-label">En cours</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon review-bg">
+          <mat-icon>rate_review</mat-icon>
+        </div>
+        <div class="stat-details">
+          <span class="stat-value">{{ stats().enRevision }}</span>
+          <span class="stat-label">En révision</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon done-bg">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="stat-details">
+          <span class="stat-value">{{ stats().termines }}</span>
+          <span class="stat-label">Terminées</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon high-bg">
+          <mat-icon>flag</mat-icon>
+        </div>
+        <div class="stat-details">
+          <span class="stat-value">{{ stats().hautePriorite }}</span>
+          <span class="stat-label">Haute priorité</span>
+        </div>
+      </div>
+    </div>
+  }
 
-        <div class="tache-actions">
-          <button mat-icon-button
-                  color="warn"
-                  matTooltip="Supprimer"
-                  (click)="supprimerTache(tache.id, $event)">
-            <mat-icon>delete</mat-icon>
+  <!-- Section Filtres -->
+  <div class="filters-container">
+    <div class="filters-row">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Rechercher</mat-label>
+        <input matInput
+               [ngModel]="searchText()"
+               (ngModelChange)="onSearchChange($event)"
+               placeholder="Titre, description...">
+        <mat-icon matPrefix>search</mat-icon>
+        @if (searchText()) {
+          <button matSuffix mat-icon-button (click)="clearSearch()">
+            <mat-icon>close</mat-icon>
           </button>
-        </div>
+        }
+      </mat-form-field>
 
-      </mat-card>
-    }
+      <div class="filters-group">
+        <mat-form-field appearance="outline">
+          <mat-label>Statut</mat-label>
+          <mat-select [ngModel]="statutFiltre()" (ngModelChange)="onStatutChange($event)">
+            <mat-option value="">Tous</mat-option>
+            @for (s of statuts; track s.value) {
+              <mat-option [value]="s.value">
+                <div class="filter-option">
+                  <mat-icon [style.color]="getPrioriteColor(s.value)">{{ s.icon }}</mat-icon>
+                  {{ s.label }}
+                </div>
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
 
-    @empty {
-      <div class="empty-state">
-        <mat-icon>assignment_off</mat-icon>
-        <h3>Aucune tâche trouvée</h3>
-        <p>Créez une tâche ou modifiez vos filtres</p>
-        <button mat-raised-button color="primary"
-                (click)="router.navigate(['/taches/nouvelle'])">
-          <mat-icon>add</mat-icon>
-          Créer une tâche
+        <mat-form-field appearance="outline">
+          <mat-label>Priorité</mat-label>
+          <mat-select [ngModel]="prioriteFiltre()" (ngModelChange)="onPrioriteChange($event)">
+            <mat-option value="">Toutes</mat-option>
+            @for (p of priorites; track p.value) {
+              <mat-option [value]="p.value">
+                <div class="filter-option">
+                  <span class="priority-dot" [style.backgroundColor]="p.color"></span>
+                  {{ p.label }}
+                </div>
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Projet</mat-label>
+          <mat-select [ngModel]="projetFiltre()" (ngModelChange)="onProjetChange($event)">
+            <mat-option value="">Tous</mat-option>
+            @for (projet of projets(); track projet.id) {
+              <mat-option [value]="projet.id">
+                <div class="filter-option">
+                  <mat-icon>folder</mat-icon>
+                  {{ projet.nom }}
+                </div>
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Filtres actifs -->
+    @if (hasActiveFilters()) {
+      <div class="active-filters">
+        <span class="active-label">Filtres appliqués :</span>
+        @if (searchText()) {
+          <span class="filter-chip">
+            Recherche : "{{ searchText() }}"
+            <mat-icon (click)="clearSearch()">close</mat-icon>
+          </span>
+        }
+        @if (statutFiltre()) {
+          <span class="filter-chip">
+            Statut : {{ getStatutLabel(statutFiltre()!) }}
+            <mat-icon (click)="clearStatutFilter()">close</mat-icon>
+          </span>
+        }
+        @if (prioriteFiltre()) {
+          <span class="filter-chip">
+            Priorité : {{ prioriteFiltre() }}
+            <mat-icon (click)="clearPrioriteFilter()">close</mat-icon>
+          </span>
+        }
+        @if (projetFiltre()) {
+          <span class="filter-chip">
+            Projet : {{ getProjetNom(+projetFiltre()!) }}
+            <mat-icon (click)="clearProjetFilter()">close</mat-icon>
+          </span>
+        }
+        <button class="reset-filters-btn" (click)="resetFilters()">
+          <mat-icon>refresh</mat-icon>
+          Tout effacer
         </button>
       </div>
     }
-
   </div>
 
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Chargement des tâches...</p>
+    </div>
+  }
+
+  <!-- Liste des tâches -->
+  @if (!loading()) {
+    <div class="tasks-grid">
+      @for (tache of tachesFiltrees(); track tache.id) {
+        <mat-card class="task-card" [class.urgent]="tache.priorite === 'URGENTE'">
+          <div class="task-header">
+            <mat-checkbox
+              [checked]="tache.statut === 'TERMINE'"
+              (change)="changerStatut(tache, $event.checked)"
+              class="task-checkbox">
+            </mat-checkbox>
+            <div class="task-title-section">
+              <h3 class="task-title" [class.completed]="tache.statut === 'TERMINE'">
+                {{ tache.titre }}
+              </h3>
+              <div class="task-badges">
+                <span class="badge" [class]="getStatutClass(tache.statut)">
+                  <mat-icon class="badge-icon">{{ getStatutIcon(tache.statut) }}</mat-icon>
+                  {{ getStatutLabel(tache.statut) }}
+                </span>
+                <span class="priority-badge" [class]="getPrioriteClass(tache.priorite)">
+                  <span class="priority-dot" [style.backgroundColor]="getPrioriteColor(tache.priorite)"></span>
+                  {{ tache.priorite }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          @if (tache.description) {
+            <p class="task-description">{{ tache.description }}</p>
+          }
+
+          <div class="task-meta">
+            @if (tache.projet) {
+              <div class="meta-item">
+                <mat-icon>folder</mat-icon>
+                <span>{{ getProjetNom(tache.projet) }}</span>
+              </div>
+            }
+            @if (tache.date_limite) {
+              <div class="meta-item" [class.urgent]="isDateUrgente(tache.date_limite)">
+                <mat-icon>event</mat-icon>
+                <span>{{ formatDate(tache.date_limite) }}</span>
+              </div>
+            }
+            @if (tache.assignee_detail) {
+              <div class="meta-item">
+                <mat-icon>person</mat-icon>
+                <span>{{ tache.assignee_detail.username }}</span>
+              </div>
+            }
+          </div>
+
+          @if (tache.statut !== 'TERMINE' && tache.date_limite) {
+            <div class="progress-section">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="getProgressPercentage(tache)"></div>
+              </div>
+              <span class="progress-text">{{ getProgressPercentage(tache) }}%</span>
+            </div>
+          }
+
+          <div class="task-actions">
+            <button mat-icon-button matTooltip="Modifier" (click)="modifierTache(tache.id)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Supprimer" color="warn" (click)="supprimerTache(tache.id, $event)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+        </mat-card>
+      } @empty {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <mat-icon>inbox</mat-icon>
+          </div>
+          <h3>Aucune tâche trouvée</h3>
+          <p>Aucune tâche ne correspond à vos critères de recherche</p>
+          <button mat-raised-button color="primary" (click)="resetFilters()">
+            <mat-icon>refresh</mat-icon>
+            Réinitialiser les filtres
+          </button>
+          <button mat-stroked-button color="primary" (click)="goToNewTask()">
+            <mat-icon>add</mat-icon>
+            Créer une tâche
+          </button>
+        </div>
+      }
+    </div>
+  }
 </div>

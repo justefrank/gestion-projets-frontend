@@ -1,0 +1,127 @@
+<div class="login-page">
+
+  <!-- ── Côté gauche — Illustration ─────────── -->
+  <div class="login-left">
+    <div class="left-content">
+
+      <div class="brand">
+        <div class="brand-icon">
+          <mat-icon>business_center</mat-icon>
+        </div>
+        <span class="brand-name">GestionProjets</span>
+      </div>
+
+      <div class="hero-text">
+        <h1>Gérez vos projets<br>avec efficacité</h1>
+        <p>Une plateforme complète pour organiser vos projets, suivre vos tâches et collaborer avec votre équipe.</p>
+      </div>
+
+      <div class="features">
+        <div class="feature-item">
+          <div class="feature-icon">
+            <mat-icon>dashboard</mat-icon>
+          </div>
+          <div class="feature-text">
+            <span class="feature-title">Tableau de bord</span>
+            <span class="feature-desc">Vue d'ensemble en temps réel</span>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">
+            <mat-icon>view_kanban</mat-icon>
+          </div>
+          <div class="feature-text">
+            <span class="feature-title">Vue Kanban</span>
+            <span class="feature-desc">Organisez vos tâches visuellement</span>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">
+            <mat-icon>group</mat-icon>
+          </div>
+          <div class="feature-text">
+            <span class="feature-title">Collaboration</span>
+            <span class="feature-desc">Travaillez en équipe efficacement</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+  </div>
+
+  <!-- ── Côté droit — Formulaire ────────────── -->
+  <div class="login-right">
+    <div class="form-container">
+
+      <div class="form-header">
+        <h2>Bon retour ! 👋</h2>
+        <p>Connectez-vous à votre espace de travail</p>
+      </div>
+
+      <div class="alert-error" *ngIf="errorMessage">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+        <div class="field-group">
+          <label class="field-label">Nom d'utilisateur</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput
+                   formControlName="username"
+                   placeholder="Entrez votre nom d'utilisateur"
+                   autocomplete="username"/>
+            <mat-icon matPrefix>person_outline</mat-icon>
+            <mat-error *ngIf="usernameError">{{ usernameError }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="field-group">
+          <div class="label-row">
+            <label class="field-label">Mot de passe</label>
+            <a class="forgot-link" href="#">Mot de passe oublié ?</a>
+          </div>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput
+                   [type]="hidePassword ? 'password' : 'text'"
+                   formControlName="password"
+                   placeholder="Entrez votre mot de passe"
+                   autocomplete="current-password"/>
+            <mat-icon matPrefix>lock_outline</mat-icon>
+            <button mat-icon-button
+                    matSuffix
+                    type="button"
+                    (click)="hidePassword = !hidePassword">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="passwordError">{{ passwordError }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <button mat-raised-button
+                color="primary"
+                type="submit"
+                class="submit-btn"
+                [disabled]="loginForm.invalid || loading">
+          <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+          <span *ngIf="!loading">Se connecter</span>
+        </button>
+
+      </form>
+
+      <div class="register-link">
+        <span>Pas encore de compte ?</span>
+        <a routerLink="/register">Créer un compte</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
