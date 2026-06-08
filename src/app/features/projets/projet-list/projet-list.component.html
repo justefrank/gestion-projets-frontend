@@ -1,0 +1,139 @@
+<div class="projet-list-wrapper">
+
+  <!-- ── En-tête ────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1>Mes Projets</h1>
+      <p>{{ projetsFiltres.length }} projet(s) trouvé(s)</p>
+    </div>
+    <button mat-raised-button color="primary"
+            (click)="router.navigate(['/projets/nouveau'])">
+      <mat-icon>add</mat-icon>
+      Nouveau projet
+    </button>
+  </div>
+
+  <!-- ── Filtres ────────────────────────────── -->
+  <div class="filters-bar">
+
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Rechercher un projet</mat-label>
+      <input matInput
+             [(ngModel)]="searchText"
+             (ngModelChange)="appliquerFiltres()"
+             placeholder="Nom du projet..."/>
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="statut-field">
+      <mat-label>Statut</mat-label>
+      <mat-select [(ngModel)]="statutFiltre"
+                  (ngModelChange)="appliquerFiltres()">
+        @for (statut of statuts; track statut.value) {
+          <mat-option [value]="statut.value">
+            {{ statut.label }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+  </div>
+
+  <!-- ── Chargement ─────────────────────────── -->
+  <div class="loading-state" *ngIf="loading">
+    <mat-icon class="spin">refresh</mat-icon>
+    <p>Chargement des projets...</p>
+  </div>
+
+  <!-- ── Liste des projets ──────────────────── -->
+  <div class="projets-grid" *ngIf="!loading">
+
+    @for (projet of projetsFiltres; track projet.id) {
+      <mat-card class="projet-card"
+                (click)="router.navigate(['/projets', projet.id])">
+
+        <!-- En-tête carte -->
+        <div class="card-header">
+          <div class="projet-icon">
+            <mat-icon>folder</mat-icon>
+          </div>
+          <span class="badge" [ngClass]="getStatutClass(projet.statut)">
+            {{ getStatutLabel(projet.statut) }}
+          </span>
+        </div>
+
+        <!-- Nom et description -->
+        <mat-card-content>
+          <h3 class="projet-nom">{{ projet.nom }}</h3>
+          <p class="projet-desc">
+            {{ projet.description || 'Aucune description' }}
+          </p>
+
+          <!-- Chef de projet -->
+          <div class="projet-meta">
+            <mat-icon>person</mat-icon>
+            <span>
+              {{ projet.chef_projet_detail.first_name }}
+              {{ projet.chef_projet_detail.last_name }}
+
+
+            </span>
+          </div>
+
+          <!-- Dates -->
+          <div class="projet-meta">
+            <mat-icon>calendar_today</mat-icon>
+            <span>{{ projet.date_debut }} → {{ projet.date_fin }}</span>
+          </div>
+
+          <!-- Progression -->
+          <div class="progression-section">
+            <div class="progression-header">
+              <span>Progression</span>
+              <strong>{{ projet.progression }}%</strong>
+            </div>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="projet.progression"
+              [color]="projet.progression === 100 ? 'accent' : 'primary'">
+            </mat-progress-bar>
+          </div>
+        </mat-card-content>
+
+        <!-- Actions -->
+        <mat-card-actions>
+          <button mat-icon-button
+                  color="primary"
+                  matTooltip="Modifier"
+                  (click)="$event.stopPropagation();
+                           router.navigate(['/projets', projet.id, 'modifier'])">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button
+                  color="warn"
+                  matTooltip="Supprimer"
+                  (click)="supprimerProjet(projet.id, $event)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-card-actions>
+
+      </mat-card>
+    }
+
+    <!-- État vide -->
+    @empty {
+      <div class="empty-state">
+        <mat-icon>folder_open</mat-icon>
+        <h3>Aucun projet trouvé</h3>
+        <p>Créez votre premier projet ou modifiez vos filtres</p>
+        <button mat-raised-button color="primary"
+                (click)="router.navigate(['/projets/nouveau'])">
+          <mat-icon>add</mat-icon>
+          Créer un projet
+        </button>
+      </div>
+    }
+
+  </div>
+
+</div>

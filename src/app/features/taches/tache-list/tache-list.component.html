@@ -1,0 +1,133 @@
+<div class="tache-list-wrapper">
+
+  <!-- ── En-tête ────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1>Mes Tâches</h1>
+      <p>{{ tachesFiltrees.length }} tâche(s) trouvée(s)</p>
+    </div>
+    <button mat-raised-button color="primary"
+            (click)="router.navigate(['/taches/nouvelle'])">
+      <mat-icon>add</mat-icon>
+      Nouvelle tâche
+    </button>
+  </div>
+
+  <!-- ── Filtres ────────────────────────────── -->
+  <div class="filters-bar">
+
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Rechercher</mat-label>
+      <input matInput
+             [(ngModel)]="searchText"
+             (ngModelChange)="appliquerFiltres()"
+             placeholder="Titre de la tâche..."/>
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Statut</mat-label>
+      <mat-select [(ngModel)]="statutFiltre"
+                  (ngModelChange)="appliquerFiltres()">
+        @for (s of statuts; track s.value) {
+          <mat-option [value]="s.value">{{ s.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Priorité</mat-label>
+      <mat-select [(ngModel)]="prioriteFiltre"
+                  (ngModelChange)="appliquerFiltres()">
+        @for (p of priorites; track p.value) {
+          <mat-option [value]="p.value">{{ p.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Projet</mat-label>
+      <mat-select [(ngModel)]="projetFiltre"
+                  (ngModelChange)="appliquerFiltres()">
+        <mat-option value="">Tous les projets</mat-option>
+        @for (projet of projets; track projet.id) {
+          <mat-option [value]="projet.id">{{ projet.nom }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+  </div>
+
+  <!-- ── Chargement ─────────────────────────── -->
+  <div class="loading-state" *ngIf="loading">
+    <mat-icon class="spin">refresh</mat-icon>
+    <p>Chargement des tâches...</p>
+  </div>
+
+  <!-- ── Liste tâches ───────────────────────── -->
+  <div class="taches-list" *ngIf="!loading">
+
+    @for (tache of tachesFiltrees; track tache.id) {
+      <mat-card class="tache-card">
+
+        <div class="tache-left">
+          <div class="tache-header">
+            <h3 class="tache-titre">{{ tache.titre }}</h3>
+            <div class="badges">
+              <span class="badge" [ngClass]="getStatutClass(tache.statut)">
+                {{ getStatutLabel(tache.statut) }}
+              </span>
+              <span class="priorite-badge" [ngClass]="getPrioriteClass(tache.priorite)">
+                {{ tache.priorite }}
+              </span>
+            </div>
+          </div>
+
+          <p class="tache-desc">
+            {{ tache.description || 'Aucune description' }}
+          </p>
+
+          <div class="tache-meta">
+            <span class="meta-item">
+              <mat-icon>folder</mat-icon>
+              {{ getProjetNom(tache.projet) }}
+            </span>
+            <span class="meta-item" *ngIf="tache.date_limite">
+              <mat-icon>schedule</mat-icon>
+              {{ tache.date_limite }}
+            </span>
+            <span class="meta-item" *ngIf="tache.assignee_detail">
+              <mat-icon>person</mat-icon>
+              {{ tache.assignee_detail.username }}
+            </span>
+          </div>
+        </div>
+
+        <div class="tache-actions">
+          <button mat-icon-button
+                  color="warn"
+                  matTooltip="Supprimer"
+                  (click)="supprimerTache(tache.id, $event)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+
+      </mat-card>
+    }
+
+    @empty {
+      <div class="empty-state">
+        <mat-icon>assignment_off</mat-icon>
+        <h3>Aucune tâche trouvée</h3>
+        <p>Créez une tâche ou modifiez vos filtres</p>
+        <button mat-raised-button color="primary"
+                (click)="router.navigate(['/taches/nouvelle'])">
+          <mat-icon>add</mat-icon>
+          Créer une tâche
+        </button>
+      </div>
+    }
+
+  </div>
+
+</div>

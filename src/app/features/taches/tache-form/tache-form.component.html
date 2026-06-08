@@ -1,0 +1,125 @@
+<div class="form-wrapper">
+
+  <!-- ── En-tête ────────────────────────────── -->
+  <div class="page-header">
+    <button mat-icon-button (click)="annuler()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h1>{{ isEditMode ? 'Modifier la tâche' : 'Nouvelle tâche' }}</h1>
+      <p>{{ isEditMode ? 'Mettez à jour les informations' : 'Remplissez les informations de la tâche' }}</p>
+    </div>
+  </div>
+
+  <!-- ── Formulaire ─────────────────────────── -->
+  <mat-card class="form-card">
+    <mat-card-content>
+
+      <div class="loading-state" *ngIf="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Chargement...</p>
+      </div>
+
+      <form [formGroup]="tacheForm"
+            (ngSubmit)="onSubmit()"
+            *ngIf="!loading">
+
+        <!-- Titre -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Titre de la tâche</mat-label>
+          <input matInput
+                 formControlName="titre"
+                 placeholder="Ex: Concevoir la maquette"/>
+          <mat-icon matPrefix>assignment</mat-icon>
+          <mat-error *ngIf="tacheForm.get('titre')?.hasError('required')">
+            Le titre est requis
+          </mat-error>
+          <mat-error *ngIf="tacheForm.get('titre')?.hasError('minlength')">
+            Minimum 3 caractères
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Description -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea matInput
+                    formControlName="description"
+                    rows="3"
+                    placeholder="Décrivez la tâche...">
+          </textarea>
+          <mat-icon matPrefix>description</mat-icon>
+        </mat-form-field>
+
+        <!-- Projet -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Projet</mat-label>
+          <mat-select formControlName="projet">
+            @for (projet of projets; track projet.id) {
+              <mat-option [value]="projet.id">{{ projet.nom }}</mat-option>
+            }
+          </mat-select>
+          <mat-icon matPrefix>folder</mat-icon>
+          <mat-error *ngIf="tacheForm.get('projet')?.hasError('required')">
+            Le projet est requis
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Priorité et Statut -->
+        <div class="row-2">
+
+          <mat-form-field appearance="outline">
+            <mat-label>Priorité</mat-label>
+            <mat-select formControlName="priorite">
+              @for (p of priorites; track p.value) {
+                <mat-option [value]="p.value">{{ p.label }}</mat-option>
+              }
+            </mat-select>
+            <mat-icon matPrefix>flag</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Statut</mat-label>
+            <mat-select formControlName="statut">
+              @for (s of statuts; track s.value) {
+                <mat-option [value]="s.value">{{ s.label }}</mat-option>
+              }
+            </mat-select>
+            <mat-icon matPrefix>track_changes</mat-icon>
+          </mat-form-field>
+
+        </div>
+
+        <!-- Date limite -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Date limite (optionnelle)</mat-label>
+          <input matInput type="date" formControlName="date_limite"/>
+          <mat-icon matPrefix>event</mat-icon>
+        </mat-form-field>
+
+        <!-- Erreur -->
+        <div class="error-message" *ngIf="errorMessage">
+          <mat-icon>error</mat-icon>
+          {{ errorMessage }}
+        </div>
+
+        <!-- Boutons -->
+        <div class="form-actions">
+          <button mat-stroked-button type="button" (click)="annuler()">
+            Annuler
+          </button>
+          <button mat-raised-button
+                  color="primary"
+                  type="submit"
+                  [disabled]="tacheForm.invalid || saving">
+            <mat-spinner diameter="20" *ngIf="saving"></mat-spinner>
+            <mat-icon *ngIf="!saving">save</mat-icon>
+            <span>{{ saving ? 'Enregistrement...' : (isEditMode ? 'Modifier' : 'Créer la tâche') }}</span>
+          </button>
+        </div>
+
+      </form>
+
+    </mat-card-content>
+  </mat-card>
+
+</div>

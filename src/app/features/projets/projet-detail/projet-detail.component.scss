@@ -1,0 +1,335 @@
+$primary: #667eea;
+$radius: 12px;
+
+.detail-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+// ── En-tête ───────────────────────────────────
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: #888;
+    font-size: 14px;
+  }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+// ── Badges ────────────────────────────────────
+.badge {
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-info    { background: #e3f2fd; color: #1565c0; }
+.badge-warning { background: #fff3e0; color: #e65100; }
+.badge-success { background: #e8f5e9; color: #2e7d32; }
+.badge-danger  { background: #fce4ec; color: #c62828; }
+
+// ── Infos ─────────────────────────────────────
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.info-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px !important;
+  border-radius: $radius !important;
+
+  mat-icon { color: $primary; font-size: 28px; width: 28px; height: 28px; }
+
+  div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .info-label {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-top: 2px;
+  }
+}
+
+// ── Progression ───────────────────────────────
+.progression-card {
+  padding: 16px 20px !important;
+  border-radius: $radius !important;
+  margin-bottom: 24px;
+}
+
+.progression-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.taches-count {
+  font-size: 12px;
+  color: #999;
+  margin-top: 6px;
+  text-align: right;
+}
+
+// ── Onglets ───────────────────────────────────
+.tabs {
+  background: white;
+  border-radius: $radius;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+// ── Kanban ────────────────────────────────────
+.kanban-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+}
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 0 16px 16px;
+}
+
+.kanban-column {
+  background: #f5f7fa;
+  border-radius: $radius;
+  min-height: 300px;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 2px solid #eee;
+  font-weight: 600;
+  font-size: 13px;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+  .count-badge {
+    margin-left: auto;
+    background: white;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: #555;
+  }
+}
+
+.column-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tache-card {
+  padding: 12px !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+  }
+}
+
+.tache-titre {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.tache-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.priorite-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priorite-faible  { background: #e8f5e9; color: #2e7d32; }
+.priorite-normale { background: #e3f2fd; color: #1565c0; }
+.priorite-haute   { background: #fff3e0; color: #e65100; }
+.priorite-urgente { background: #fce4ec; color: #c62828; }
+
+.date-limite {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: #999;
+
+  mat-icon { font-size: 12px; width: 12px; height: 12px; }
+}
+
+.tache-assignee {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #666;
+}
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: $primary;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.empty-column {
+  text-align: center;
+  padding: 24px;
+  color: #bbb;
+  font-size: 13px;
+}
+
+// ── Membres ───────────────────────────────────
+.membres-list {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.membre-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 10px;
+}
+
+.membre-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.membre-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  .membre-nom {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1a1a2e;
+  }
+
+  .membre-username {
+    font-size: 12px;
+    color: #999;
+  }
+}
+
+.role-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #e8eaf6;
+  color: #3949ab;
+  font-weight: 600;
+}
+
+// ── États ─────────────────────────────────────
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px;
+  color: #aaa;
+
+  .spin {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px;
+  color: #bbb;
+
+  mat-icon { font-size: 48px; width: 48px; height: 48px; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

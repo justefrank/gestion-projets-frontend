@@ -1,0 +1,160 @@
+$primary: #667eea;
+$radius: 12px;
+
+.dashboard-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+// ── En-tête ───────────────────────────────────
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: #666;
+    font-size: 14px;
+  }
+}
+
+// ── Cartes statistiques ───────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px !important;
+  border-radius: $radius !important;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+
+  .stat-icon mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    opacity: 0.85;
+  }
+
+  .stat-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stat-number {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-top: 4px;
+  }
+}
+
+.stat-blue   { background: linear-gradient(135deg, #667eea, #764ba2); }
+.stat-green  { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #1a4a2e; }
+.stat-orange { background: linear-gradient(135deg, #f6d365, #fda085); color: #5a3000; }
+.stat-red    { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+// ── Contenu principal ─────────────────────────
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.card {
+  border-radius: $radius !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
+
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+.chart-content {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+// ── Projets récents ───────────────────────────
+.projet-item {
+  padding: 12px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+
+  &:hover { background: #f5f7fa; }
+  &:last-child { border-bottom: none; }
+}
+
+.projet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.projet-nom {
+  font-weight: 500;
+  color: #1a1a2e;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.en_cours   { background: #e3f2fd; color: #1565c0; }
+  &.en_attente { background: #fff3e0; color: #e65100; }
+  &.termine    { background: #e8f5e9; color: #2e7d32; }
+  &.annule     { background: #fce4ec; color: #c62828; }
+}
+
+.progression-label {
+  font-size: 11px;
+  color: #999;
+  display: block;
+  margin-top: 4px;
+  text-align: right;
+}
+
+// ── État vide ─────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px;
+  color: #aaa;
+
+  mat-icon { font-size: 48px; width: 48px; height: 48px; }
+  p { margin: 0; font-size: 14px; }
+}

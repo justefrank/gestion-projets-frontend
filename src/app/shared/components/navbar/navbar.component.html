@@ -1,0 +1,50 @@
+<header class="navbar">
+
+  <!-- Titre dynamique -->
+  <div class="navbar-left">
+    <h2 class="page-title">{{ pageTitle }}</h2>
+  </div>
+
+  <!-- Actions à droite -->
+  <div class="navbar-right">
+
+    <!-- Notifications -->
+    <button mat-icon-button
+            matTooltip="Notifications"
+            class="icon-btn">
+      <mat-icon>notifications</mat-icon>
+    </button>
+
+    <!-- Menu utilisateur -->
+    <button mat-button
+            [matMenuTriggerFor]="userMenu"
+            class="user-btn">
+      <div class="user-avatar">
+        {{ (authService.currentUser$ | async)?.username?.charAt(0)?.toUpperCase() }}
+      </div>
+      <div class="user-info">
+        <span class="user-name">
+          {{ (authService.currentUser$ | async)?.first_name }}
+          {{ (authService.currentUser$ | async)?.last_name }}
+        </span>
+        <span class="user-role">Membre</span>
+      </div>
+      <mat-icon>expand_more</mat-icon>
+    </button>
+
+    <!-- Dropdown menu -->
+    <mat-menu #userMenu="matMenu" xPosition="before">
+      <button mat-menu-item>
+        <mat-icon>person</mat-icon>
+        <span>{{ (authService.currentUser$ | async)?.username }}</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()" class="logout-btn">
+        <mat-icon>logout</mat-icon>
+        <span>Déconnexion</span>
+      </button>
+    </mat-menu>
+
+  </div>
+
+</header>

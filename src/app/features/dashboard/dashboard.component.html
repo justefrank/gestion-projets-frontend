@@ -1,0 +1,109 @@
+<div class="dashboard-wrapper">
+
+  <!-- ── En-tête ────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-text">
+      <h1>Tableau de bord</h1>
+      <p>Bienvenue, <strong>{{ (authService.currentUser$ | async)?.first_name || 'utilisateur' }}</strong> 👋</p>
+    </div>
+    <button mat-raised-button color="primary"
+            (click)="router.navigate(['/projets/nouveau'])">
+      <mat-icon>add</mat-icon>
+      Nouveau projet
+    </button>
+  </div>
+
+  <!-- ── Cartes statistiques ────────────────── -->
+  <div class="stats-grid" *ngIf="stats">
+
+    <mat-card class="stat-card stat-blue">
+      <div class="stat-icon"><mat-icon>folder</mat-icon></div>
+      <div class="stat-info">
+        <span class="stat-number">{{ stats.total_projets }}</span>
+        <span class="stat-label">Total projets</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card stat-green">
+      <div class="stat-icon"><mat-icon>play_circle</mat-icon></div>
+      <div class="stat-info">
+        <span class="stat-number">{{ stats.projets_en_cours }}</span>
+        <span class="stat-label">En cours</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card stat-orange">
+      <div class="stat-icon"><mat-icon>assignment</mat-icon></div>
+      <div class="stat-info">
+        <span class="stat-number">{{ stats.mes_taches }}</span>
+        <span class="stat-label">Mes tâches</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card stat-red">
+      <div class="stat-icon"><mat-icon>warning</mat-icon></div>
+      <div class="stat-info">
+        <span class="stat-number">{{ stats.taches_en_retard }}</span>
+        <span class="stat-label">En retard</span>
+      </div>
+    </mat-card>
+
+  </div>
+
+  <!-- ── Contenu principal ──────────────────── -->
+  <div class="content-grid">
+
+    <!-- Graphique -->
+    <mat-card class="card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>pie_chart</mat-icon>
+          Répartition des tâches
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="chart-content">
+        <canvas id="tachesChart"></canvas>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Projets récents -->
+    <mat-card class="card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>folder_open</mat-icon>
+          Projets récents
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+
+        <div class="projet-item"
+             *ngFor="let projet of projetsRecents"
+             (click)="router.navigate(['/projets', projet.id])">
+          <div class="projet-header">
+            <span class="projet-nom">{{ projet.nom }}</span>
+            <span class="badge" [ngClass]="projet.statut | lowercase">
+              {{ projet.statut }}
+            </span>
+          </div>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="projet.progression">
+          </mat-progress-bar>
+          <span class="progression-label">{{ projet.progression }}% complété</span>
+        </div>
+
+        <div class="empty-state" *ngIf="projetsRecents.length === 0">
+          <mat-icon>folder_open</mat-icon>
+          <p>Aucun projet pour le moment</p>
+          <button mat-stroked-button color="primary"
+                  (click)="router.navigate(['/projets/nouveau'])">
+            Créer mon premier projet
+          </button>
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+
+</div>
